@@ -1,0 +1,198 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Santa Ynez Mountains Scavenger Hunt</title>
+<style>
+:root{--gr:#2d5a27;--g2:#3e7c37;--cr:#faf6ec;--mu:#7a7a6c;--go:#e9a13b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Georgia,serif;background:var(--cr);color:#2b2b23;padding-bottom:90px}
+header{background:linear-gradient(160deg,var(--gr),var(--g2));color:#fff;padding:22px 16px 18px;text-align:center}
+h1{font-size:clamp(20px,5vw,30px)}
+header p{opacity:.85;font-size:14px;margin-top:6px;font-style:italic}
+.pw{max-width:640px;margin:14px auto 0;background:rgba(255,255,255,.25);border-radius:99px;height:22px;position:relative;overflow:hidden}
+.pb{height:100%;width:0;background:var(--go);border-radius:99px;transition:width .3s}
+.pt{position:absolute;inset:0;text-align:center;font:700 13px/22px Verdana;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.notice{max-width:780px;margin:12px auto 0;padding:0 14px;font:13px/1.5 Verdana;color:#5a5a4d;text-align:center}
+.controls{max-width:940px;margin:14px auto 8px;padding:0 14px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center}
+.fb{border:2px solid var(--gr);background:#fff;color:var(--gr);padding:7px 14px;border-radius:99px;cursor:pointer;font:700 13px Verdana}
+.fb.on{background:var(--gr);color:#fff}
+.rb{border:2px solid #a33;background:#fff;color:#a33;padding:7px 14px;border-radius:99px;cursor:pointer;font:700 13px Verdana}
+.grid{max-width:1000px;margin:10px auto;padding:0 12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:14px}
+.card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(60,60,30,.12);display:flex;flex-direction:column;position:relative}
+.card.seen{outline:3px solid var(--go)}
+.card.seen:after{content:"✓ SEEN";position:absolute;top:10px;right:-32px;transform:rotate(35deg);background:var(--go);color:#fff;font:700 10px Verdana;padding:4px 36px;letter-spacing:1px;z-index:2}
+.ib{height:150px;background:linear-gradient(135deg,#dfe8d5,#c6d6bb);display:flex;align-items:center;justify-content:center}
+.ib img{width:100%;height:100%;object-fit:cover}
+.ph{display:flex;flex-direction:column;align-items:center;color:#6b7a5e;text-align:center;padding:8px;font:10px Verdana}
+.ph b{font-size:38px;line-height:1.2}
+.ph a,.ph button{margin-top:5px;font:10px Verdana;border:1px solid #6b7a5e;background:transparent;color:#6b7a5e;border-radius:99px;padding:3px 10px;cursor:pointer;text-decoration:none}
+.cb{padding:10px 12px 12px;flex:1;display:flex;flex-direction:column}
+.cb h3{font-size:15px}
+.sc{font-style:italic;font-size:12px;color:var(--mu);margin:2px 0 6px}
+.hn{font-size:12px;color:#55554a;line-height:1.4;flex:1}
+.ck{margin-top:10px;border:none;border-radius:8px;padding:9px;font:700 12px Verdana;cursor:pointer;background:#eef3e8;color:var(--gr)}
+.card.seen .ck{background:var(--gr);color:#fff}
+footer{max-width:900px;margin:18px auto 0;padding:0 16px;font:11px/1.6 Verdana;color:var(--mu);text-align:center}
+</style>
+</head>
+<body>
+<header>
+<h1>🏕️ Santa Ynez Mountains Scavenger Hunt</h1>
+<p>102 species — 30 plants · 31 insects &amp; spiders · 14 mammals · 17 birds · 10 herps<br>Behind Santa Barbara · Los Padres National Forest</p>
+<div class="pw"><div class="pb" id="pb"></div><div class="pt" id="pt"></div></div>
+</header>
+<div class="notice"><b>📲 First-time tip:</b> open this file once with an internet connection — each species' official Wikipedia photo is downloaded, resized and saved inside the page. After that one-time sync the whole hunt works completely offline, and checkmarks save automatically on this device.</div>
+<div class="controls" id="fl">
+<button class="fb on" data-f="all">All</button>
+<button class="fb" data-f="p">🌿 Plants</button>
+<button class="fb" data-f="i">🐛 Insects &amp; Spiders</button>
+<button class="fb" data-f="m">🐾 Mammals</button>
+<button class="fb" data-f="b">🐦 Birds</button>
+<button class="fb" data-f="h">🦎 Herps</button>
+<button class="rb" id="rs">Reset all ✓</button>
+</div>
+<div class="grid" id="gr"></div>
+<footer>Check off each species when you spot it — progress is saved on this device. Photos via Wikipedia, cached for offline use. Never approach, touch or feed wildlife; leave plants as you found them — and give rattlesnakes plenty of space!</footer>
+<script>
+const S=[
+// PLANTS (30)
+["Coast Live Oak","Quercus agrifolia","p","Evergreen with sharp, holly-like leaves and fat acorns — the canyon signature tree."],
+["Valley Oak","Quercus lobata","p","California's largest oak; deeply lobed leaves, huge limbs in valley bottoms."],
+["Canyon Live Oak","Quercus chrysolepis","p","Golden fuzz under the leaves; hugs shady, rocky canyon walls."],
+["Big-cone Douglas-fir","Pseudotsuga macrocarpa","p","SoCal's only native Douglas-fir; huge spiky cones on cool north slopes."],
+["Coulter Pine","Pinus coulteri","p","Ten-pound 'widowmaker' cones — the heaviest of any pine. Higher slopes."],
+["California Sycamore","Platanus racemosa","p","Patchwork peeling white bark overhanging seasonal creek beds."],
+["California Bay Laurel","Umbellularia californica","p","Narrow waxy leaves with a pungent smell — crush one and gently sniff."],
+["Blue Elderberry","Sambucus cerulea","p","Flat-topped cream flowers, then dusty-blue berries. A bird magnet."],
+["Toyon","Heteromeles arbutifolia","p","Glossy leaves and bright red berry clusters — gave Hollywood its name."],
+["Eastwood Manzanita","Arctostaphylos glandulosa","p","Smooth red bark, twisted branches, urn-shaped pink-white flowers."],
+["Big-berry Manzanita","Arctostaphylos glauca","p","Bluish leaves and big fruits on dry, rocky slopes."],
+["Chamise","Adenostoma fasciculatum","p","Needle-like leaves in tight bundles; owns the driest ridgelines."],
+["Laurel Sumac","Malosma laurina","p","Big leaves folded like tacos; reddish new growth on south slopes."],
+["Lemonade Berry","Rhus integrifolia","p","Thick round leaves; fuzzy red berries with a tart, lemony coating."],
+["Poison Oak","Toxicodendron diversilobum","p","Leaves of three, let it be! Shiny triple leaflets, red in fall. Do NOT touch."],
+["Black Sage","Salvia mellifera","p","Dark aromatic leaves; whorls of violet flowers ring the stems."],
+["White Sage","Salvia apiana","p","Silvery-white leaves, tall brushy flower spikes; sacred to the Chumash."],
+["Purple Sage","Salvia leucophylla","p","Gray fuzzy leaves; lavender flower spikes after rainy winters."],
+["California Sagebrush","Artemisia californica","p","Feathery gray leaves — the classic resinous 'hike smell' of these hills."],
+["Coyote Brush","Baccharis pilularis","p","Sticky green leaves; fluffy white seed heads light up in fall."],
+["California Buckwheat","Eriogonum fasciculatum","p","Domes of tiny flowers fading white to pink to rusty brown."],
+["Bush Monkeyflower","Diplacus aurantiacus","p","Sticky leaves and orange, snapdragon-like blooms."],
+["Chaparral Yucca","Hesperoyucca whipplei","p","'Our Lord's Candle' — a giant stalk erupts from the rosette, then it dies."],
+["Matilija Poppy","Romneya coulteri","p","Huge white 'fried egg' blooms — named for Matilija Canyon in this range."],
+["California Poppy","Eschscholzia californica","p","The state flower; silky orange cups that close at night or on gray days."],
+["Silver Bush Lupine","Lupinus albifrons","p","Silvery leaves and spikes of royal-purple pea flowers."],
+["Wild Cucumber","Marah macrocarpus","p","Spring vine draping over shrubs; white star flowers, spiky 'hedgehog' fruit."],
+["Fuchsia-flowered Gooseberry","Ribes speciosum","p","Neon-red fuchsia-like blooms on a very spiny shrub. Hummingbird favorite."],
+["Hummingbird Sage","Salvia spathacea","p","Magenta whorls with a fruity-pineapple scent; patches under oaks."],
+["Western Redbud","Cercis occidentalis","p","Magenta blooms straight from bare branches in early spring."],
+// INSECTS, SPIDERS & BUGS (31)
+["Monarch Butterfly","Danaus plexippus","i","Orange with black veins; Santa Barbara is a world-famous overwintering spot."],
+["California Dogface","Zerene eurydice","i","State insect — the male's forewings show a yellow dog's face in profile."],
+["Western Tiger Swallowtail","Papilio rutulus","i","Big yellow striped butterfly gliding along creeks near sycamores."],
+["Sara Orangetip","Anthocharis sara","i","Early-spring white butterfly with bright orange wing tips.",null,"Pieridae"],
+["Painted Lady","Vanessa cardui","i","The great migrator — huge spring flights some years."],
+["Common Buckeye","Junonia coenia","i","Bold blue eyespots; often sits low on open dirt trails."],
+["Acmon Blue","Icaricia acmon","i","Tiny sky-blue butterfly with shiny blue-green dots on the hindwing.","Plebejus acmon","Lycaenidae"],
+["Western Honey Bee","Apis mellifera","i","The fuzzy amber bee — watch any flower patch and it appears."],
+["Yellow-faced Bumble Bee","Bombus vosnesenskii","i","Our most common bumble bee: black with a yellow face and belly band.",null,"Bumblebee"],
+["Valley Carpenter Bee","Xylocopa varipuncta","i","Huge shiny black females bore into wood; males are golden fuzzballs.",null,"Carpenter bee"],
+["Flame Skimmer","Libellula saturata","i","Fiery-orange dragonfly with amber wings, perching boldly near water."],
+["Blue Dasher","Pachydiplax longipennis","i","Powder-blue abdomen, teal eyes; flicks its wings at intruders."],
+["Variegated Meadowhawk","Sympetrum corruptum","i","Reddish dragonfly with checkered wings, often far from water."],
+["California Mantis","Stagmomantis californica","i","Our native praying mantis — a patient ambush hunter on shrubs.",null,"Mantodea"],
+["Convergent Lady Beetle","Hippodamia convergens","i","The classic ladybug — sometimes winters by the thousands in these hills."],
+["Green Fig Beetle","Cotinis mutabilis","i","Big velvety-green beetle that blunders around noisily in summer."],
+["Ten-lined June Beetle","Polyphylla decemlineata","i","Brown-and-white striped; hisses softly and flies to porch lights."],
+["Ceanothus Silkmoth","Hyalophora euryalus","i","Gorgeous reddish moth with white 'windows'; wingspan like a small bird."],
+["Western Tussock Moth","Orgyia vetusta","i","Wild black caterpillar with red head, white tufts and long hair 'antennae'."],
+["Leaf-footed Bug","Leptoglossus","i","Brown shield-shaped bug with leaf-like flares on its hind legs."],
+["Leafhopper Assassin Bug","Zelus renardii","i","Slender hunter with a needle snout, waiting on flower heads. Don't handle.",null,"Reduviidae"],
+["Bordered Plant Bug","Largus","i","Black bug edged in orange-red, wandering slowly across sunny trails.",null,"Hemiptera"],
+["Fork-tailed Bush Katydid","Scudderia furcata","i","Leaf-green singer hidden in oak leaves; raspy 'tick-tick' on summer nights.",null,"Tettigoniidae"],
+["Jerusalem Cricket","Stenopelmatus","i","'Child of the Earth' — human-headed, banded burrowing cricket. Harmless.","Jerusalem cricket"],
+["California Ebony Tarantula","Aphonopelma","i","Our own tarantula — males wander trails on warm fall evenings.","Aphonopelma","Tarantula"],
+["California Trapdoor Spider","Bothriocyrtum californicum","i","Builds a camouflaged hinged silk door over its burrow in canyon banks.",null,"Trapdoor spider"],
+["Western Black Widow","Latrodectus hesperus","i","Shiny black with a red hourglass; tangled webs under rocks. Look, don't touch."],
+["Bold Jumping Spider","Phidippus audax","i","Fuzzy black jumper with huge eyes and metallic green fangs. Stalks and pounces."],
+["Western Spotted Orbweaver","Neoscona oaxacensis","i","Rebuilds its classic round web at dusk across canyon trails.",null,"Orb-weaver spider"],
+["Wolf Spider","Hogna","i","Big gray ground hunter; eyes sparkle back at your headlamp at night.","Wolf spider"],
+["Western Velvet Ant","Dasymutilla","i","Fuzzy red-orange 'ant' that is really a wingless wasp — famous sting!","Velvet ant","Mutillidae"],
+// MAMMALS (14)
+["Mule Deer","Odocoileus hemionus","m","Huge ears, black-tipped tail; dawn and dusk near meadows and water."],
+["Mountain Lion","Puma concolor","m","Elusive and mostly nocturnal — tawny with a long tail. Never run from one.","Cougar"],
+["Bobcat","Lynx rufus","m","Spotted tawny coat and short bobbed tail; crosses trails at first light."],
+["Coyote","Canis latrans","m","Lean and lanky, bushy tail low; listen for group yip-howls at dusk."],
+["Gray Fox","Urocyon cinereoargenteus","m","Salt-and-pepper coat, black-tipped tail — and it can climb trees."],
+["Raccoon","Procyon lotor","m","Masked face and ringed tail; near creeks and camps after dark."],
+["Striped Skunk","Mephitis mephitis","m","Black with twin white stripes — usually smelled before seen!"],
+["Western Gray Squirrel","Sciurus griseus","m","All-gray with a huge frosty tail; shyer than city squirrels."],
+["California Ground Squirrel","Otospermophilus beecheyi","m","Stands bolt-upright and whistles alarms near its burrow."],
+["Brush Rabbit","Sylvilagus bachmani","m","Small cinnamon rabbit; freezes in brush, then bolts for cover."],
+["Black-tailed Jackrabbit","Lepus californicus","m","Enormous ears and long legs on open grassy flats."],
+["Dusky-footed Woodrat","Neotoma fuscipes","m","The 'packrat' — find its stick houses built against oak trunks."],
+["Botta's Pocket Gopher","Thomomys bottae","m","Seldom seen, but its fan-shaped fresh dirt mounds give it away."],
+["Western Red Bat","Lasiurus blossevillii","m","Roosts by day hanging like a dead leaf in creekside trees.","Lasiurus blossevillii"],
+// BIRDS (17)
+["California Quail","Callipepla californica","b","Plump with a drooping topknot; coveys scurry across trails."],
+["Greater Roadrunner","Geococcyx californianus","b","Shaggy crest, long tail — RUNS down trails instead of flying. Beep-beep!"],
+["Acorn Woodpecker","Melanerpes formicivorus","b","Clown-faced with a red cap; drills acorn granaries in trees and poles."],
+["Nuttall's Woodpecker","Dryobates nuttallii","b","Bold black-and-white barred back — almost exclusively a California bird."],
+["California Scrub-Jay","Aphelocoma californica","b","Bright blue head, wings and tail; bold around hikers."],
+["Wrentit","Chamaea fasciata","b","Plain brown chaparral skulker you hear first — a fast rolling trill."],
+["California Towhee","Melozone crissalis","b","Stout brown bird that two-foot-scratches under bushes."],
+["Spotted Towhee","Pipilo maculatus","b","Black hood, rusty sides, white-spotted back; kicks loudly in leaf litter."],
+["Anna's Hummingbird","Calypte anna","b","The male's whole head glitters rose-red; dramatic dive displays."],
+["Oak Titmouse","Baeolophus inornatus","b","Small, plain gray, with a perky crest — the oak woodland songster."],
+["Red-tailed Hawk","Buteo jamaicensis","b","Broad wings and rusty tail; the raspy scream heard in every movie."],
+["Turkey Vulture","Cathartes aura","b","Rocking V-shaped wings and bare red head — nature's cleanup crew."],
+["Golden Eagle","Aquila chrysaetos","b","Huge all-dark eagle with a golden nape, soaring over open ridges."],
+["Barn Owl","Tyto alba","b","Ghostly pale with a heart-shaped face; hunts meadows after dark."],
+["Lesser Goldfinch","Spinus psaltria","b","Tiny yellow bird with a black cap; hangs upside-down on seed heads."],
+["Cooper's Hawk","Accipiter cooperii","b","Long-tailed forest hawk that threads through trees at full speed."],
+["Wild Turkey","Meleagris gallopavo","b","Strutting flocks with fan tails on open slopes — gobble at dawn."],
+// REPTILES & AMPHIBIANS (10)
+["Western Fence Lizard","Sceloporus occidentalis","h","The classic 'blue-belly' doing push-ups on rocks, logs and fences."],
+["Southern Alligator Lizard","Elgaria multicarinata","h","Long body and big head — looks like a tiny crocodile."],
+["Western Whiptail","Aspidoscelis tigris","h","Slim, long-tailed lizard darting in bursts; flicks sandy soil while foraging."],
+["Gopher Snake","Pituophis catenifer","h","Blotched; hisses and buzzes its tail to imitate a rattler. Harmless!"],
+["California Kingsnake","Lampropeltis californiae","h","Glossy banded rings; harmless — and famous for eating rattlesnakes."],
+["Pacific Rattlesnake","Crotalus oreganus","h","Chunky body, triangular head, rattle. If you hear it, freeze and give it space."],
+["Western Pond Turtle","Actinemys marmorata","h","California's only native freshwater turtle, often with an algae-fuzzy shell."],
+["Western Toad","Anaxyrus boreas","h","Warty and squat with a pale stripe down the back; walks, doesn't hop."],
+["Pacific Chorus Frog","Pseudacris regilla","h","Thumb-sized frog with sticky toe pads — the 'ribbit' in every movie."],
+["Arboreal Salamander","Aneides lugubris","h","Chocolate-brown and speckled; hides under bark and logs in moist canyons."]
+];
+const EM={p:"🌿",i:"🐛",m:"🐾",b:"🐦",h:"🦎"};
+const API="https://en.wikipedia.org/api/rest_v1/page/summary/";
+const gr=document.getElementById("gr"),pb=document.getElementById("pb"),pt=document.getElementById("pt");
+let seen=new Set();
+try{seen=new Set(JSON.parse(localStorage.getItem("sy3_seen")||"[]"))}catch(e){}
+const esc=t=>t.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+gr.innerHTML=S.map((sp,i)=>`<div class="card${seen.has(sp[0])?" seen":""}" data-g="${sp[2]}" data-i="${i}"><div class="ib" id="ib${i}"><div class="ph"><b>${EM[sp[2]]}</b>loading…</div></div><div class="cb"><h3>${esc(sp[0])}</h3><div class="sc">${esc(sp[1])}</div><div class="hn">${esc(sp[3])}</div><button class="ck">${seen.has(sp[0])?"✓ Seen — tap to undo":"Mark as seen"}</button></div></div>`).join("");
+const cards=[...gr.children];
+function prog(){pb.style.width=(seen.size/S.length*100)+"%";pt.textContent=seen.size+" of "+S.length+" species found 🎉"}
+cards.forEach(c=>{const i=+c.dataset.i;c.querySelector(".ck").onclick=()=>{const n=S[i][0];seen.has(n)?seen.delete(n):seen.add(n);c.classList.toggle("seen",seen.has(n));c.querySelector(".ck").textContent=seen.has(n)?"✓ Seen — tap to undo":"Mark as seen";try{localStorage.setItem("sy3_seen",JSON.stringify([...seen]))}catch(e){}prog()}});
+const get=i=>{try{return localStorage.getItem("sy3_img"+i)}catch(e){return null}};
+const put=(i,d)=>{try{localStorage.setItem("sy3_img"+i,d)}catch(e){}};
+function paint(i,src){document.getElementById("ib"+i).innerHTML=`<img src="${src}" alt="${esc(S[i][0])}">`}
+function ph(i,msg){const lk=navigator.onLine?`<a href="https://commons.wikimedia.org/w/index.php?search=${encodeURIComponent(S[i][1])}" target="_blank" rel="noopener">🔍 see photo online</a>`:"";document.getElementById("ib"+i).innerHTML=`<div class="ph"><b>${EM[S[i][2]]}</b>${msg}${lk}<button onclick="ld(${i})">↻ retry</button></div>`}
+async function shot(i,url){const im=new Image();im.crossOrigin="anonymous";await new Promise((ok,no)=>{im.onload=ok;im.onerror=no;im.src=url});try{const cv=document.createElement("canvas");cv.width=240;cv.height=165;const x=cv.getContext("2d"),s=Math.max(240/im.width,165/im.height),w=im.width*s,h=im.height*s;x.drawImage(im,(240-w)/2,(165-h)/2,w,h);const d=cv.toDataURL("image/jpeg",.72);put(i,d);paint(i,d)}catch(e){paint(i,url)}}
+async function wiki(i,t){const r=await fetch(API+encodeURIComponent(t));if(!r.ok)throw 0;const j=await r.json(),u=j.thumbnail&&j.thumbnail.source;if(!u)throw 0;await shot(i,u)}
+async function ld(i){
+ if(get(i)){paint(i,get(i));return}
+ if(!navigator.onLine){ph(i,"open once online to save photos");return}
+ try{await wiki(i,S[i][4]||S[i][1])}
+ catch(e){if(S[i][5]){try{await wiki(i,S[i][5]);return}catch(e2){}}ph(i,"photo not found yet")}
+}
+function sync(){cards.forEach(c=>ld(+c.dataset.i))}
+prog();sync();addEventListener("online",sync);
+document.getElementById("fl").addEventListener("click",e=>{const b=e.target.closest(".fb");if(!b)return;document.querySelectorAll(".fb").forEach(x=>x.classList.toggle("on",x===b));const f=b.dataset.f;cards.forEach(c=>c.style.display=(f==="all"||c.dataset.g===f)?"":"none")});
+document.getElementById("rs").onclick=()=>{if(confirm("Uncheck every species and start over?")){seen.clear();try{localStorage.setItem("sy3_seen","[]")}catch(e){}cards.forEach(c=>{c.classList.remove("seen");c.querySelector(".ck").textContent="Mark as seen"});prog()}};
+</script>
+</body>
+</html>
+
